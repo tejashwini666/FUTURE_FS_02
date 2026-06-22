@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LeadDesk CRM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
+      background: #1a1a2e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0 24px 24px;
+      border-bottom: 1px solid #2d2d4e;
+      color: #7c83fd;
+    }
+    .logo span { color: #fff; }
+
+    .nav { margin-top: 20px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 24px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      color: #a0a0c0;
+      border-left: 3px solid transparent;
+      transition: all 0.18s;
+    }
+    .nav-item:hover { color: #fff; background: #2d2d4e; }
+    .nav-item.active { color: #7c83fd; border-left-color: #7c83fd; background: #22224a; }
+    .nav-item .icon { font-size: 1.1rem; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      font-size: 0.78rem;
+      color: #555577;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 220px;
+      padding: 28px 32px;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .topbar h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #7c83fd; color: #fff; }
+    .btn-primary:hover { background: #5a62f5; }
+    .btn-danger { background: #ff4d6d22; color: #ff4d6d; }
+    .btn-danger:hover { background: #ff4d6d33; }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; border-radius: 5px; }
+
+    /* ── STATS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .stat-card.blue .stat-value { color: #7c83fd; }
+    .stat-card.green .stat-value { color: #2ec4b6; }
+    .stat-card.orange .stat-value { color: #f4a261; }
+    .stat-card.red .stat-value { color: #ff4d6d; }
+
+    /* ── FILTERS ── */
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      padding: 8px 14px;
+      border: 1.5px solid #dde1ee;
+      border-radius: 7px;
+      font-size: 0.88rem;
+      outline: none;
+      width: 220px;
+      transition: border 0.15s;
+    }
+    .search-box:focus { border-color: #7c83fd; }
+
+    .filter-select {
+      padding: 8px 12px;
+      border: 1.5px solid #dde1ee;
+      border-radius: 7px;
+      font-size: 0.88rem;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+    }
+    .filter-select:focus { border-color: #7c83fd; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead {
+      background: #f6f7ff;
+    }
+
+    th {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      border-bottom: 1px solid #eee;
+    }
+
+    td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f2f3f8;
+      color: #333;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: #fafbff; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-new { background: #e8eaff; color: #5a62f5; }
+    .badge-contacted { background: #fff3cd; color: #b8860b; }
+    .badge-converted { background: #d4f8ef; color: #1a9e7a; }
+
+    .action-btns { display: flex; gap: 6px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+
+    .modal h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #dde1ee;
+      border-radius: 7px;
+      font-size: 0.88rem;
+      outline: none;
+      font-family: inherit;
+      transition: border 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #7c83fd; }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .btn-cancel { background: #f0f2f5; color: #555; }
+    .btn-cancel:hover { background: #e2e5ef; }
+
+    /* ── NOTES MODAL ── */
+    .notes-list { margin-bottom: 14px; }
+    .note-item {
+      background: #f6f7ff;
+      border-radius: 7px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 0.86rem;
+      color: #444;
+    }
+    .note-date {
+      font-size: 0.72rem;
+      color: #aaa;
+      margin-bottom: 3px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 0;
+      color: #bbb;
+      font-size: 0.95rem;
+    }
+
+    /* ── LOGIN ── */
+    .login-screen {
+      min-height: 100vh;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    }
+
+    .login-box h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .login-box p {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .login-error {
+      color: #ff4d6d;
+      font-size: 0.82rem;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h2>🔐 LeadDesk</h2>
+    <p>Sign in to access your CRM</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" />
+    </div>
+    <div class="login-error" id="loginError">Invalid credentials. Try admin / admin123</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="doLogin()">Sign In</button>
+    <p style="margin-top:14px;font-size:0.78rem;color:#bbb;text-align:center;">Demo: admin / admin123</p>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" class="hidden">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">Lead<span>Desk</span></div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="setNav(this)"><span class="icon">📋</span> All Leads</div>
+      <div class="nav-item" onclick="setNav(this)"><span class="icon">🆕</span> New Leads</div>
+      <div class="nav-item" onclick="setNav(this)"><span class="icon">📞</span> Contacted</div>
+      <div class="nav-item" onclick="setNav(this)"><span class="icon">✅</span> Converted</div>
+    </nav>
+    <div class="sidebar-footer">Logged in as <strong>Admin</strong><br><span style="cursor:pointer;color:#ff4d6d;" onclick="doLogout()">Sign out</span></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h1 id="pageTitle">All Leads</h1>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Lead</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Leads</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">New</div>
+        <div class="stat-value" id="statNew">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Contacted</div>
+        <div class="stat-value" id="statContacted">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Converted</div>
+        <div class="stat-value" id="statConverted">0</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input class="search-box" type="text" id="searchBox" placeholder="Search by name or email…" oninput="renderTable()" />
+      <select class="filter-select" id="filterSource" onchange="renderTable()">
+        <option value="">All Sources</option>
+        <option>Website</option>
+        <option>Referral</option>
+        <option>Social Media</option>
+        <option>Email Campaign</option>
+        <option>Other</option>
+      </select>
+      <select class="filter-select" id="filterStatus" onchange="renderTable()">
+        <option value="">All Statuses</option>
+        <option>New</option>
+        <option>Contacted</option>
+        <option>Converted</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Date Added</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leadsTable"></tbody>
+      </table>
+      <div class="empty-state hidden" id="emptyState">No leads found. Add your first lead!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD / EDIT MODAL ── -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add New Lead</h2>
+    <div class="form-group">
+      <label>Full Name *</label>
+      <input type="text" id="fName" placeholder="e.g. Rajesh Kumar" />
+    </div>
+    <div class="form-group">
+      <label>Email Address *</label>
+      <input type="email" id="fEmail" placeholder="e.g. rajesh@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Source</label>
+      <select id="fSource">
+        <option>Website</option>
+        <option>Referral</option>
+        <option>Social Media</option>
+        <option>Email Campaign</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="fStatus">
+        <option>New</option>
+        <option>Contacted</option>
+        <option>Converted</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('leadModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOTES MODAL ── -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <h2 id="notesTitle">Notes</h2>
+    <div class="notes-list" id="notesList"></div>
+    <div class="form-group">
+      <label>Add a note or follow-up</label>
+      <textarea id="noteText" placeholder="Write a note…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('notesModal')">Close</button>
+      <button class="btn btn-primary" onclick="saveNote()">Add Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ──
+  let leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+  let editIndex = null;
+  let notesIndex = null;
+  let currentFilter = 'All Leads';
+
+  function save() {
+    localStorage.setItem('crm_leads', JSON.stringify(leads));
+  }
+
+  // ── LOGIN ──
+  function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if (u === 'admin' && p === 'admin123') {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      renderTable();
+      updateStats();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function doLogout() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+  }
+
+  // ── NAV ──
+  function setNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = el.innerText.trim();
+    document.getElementById('pageTitle').textContent = currentFilter;
+    document.getElementById('filterStatus').value = '';
+    renderTable();
+  }
+
+  // ── STATS ──
+  function updateStats() {
+    document.getElementById('statTotal').textContent = leads.length;
+    document.getElementById('statNew').textContent = leads.filter(l => l.status === 'New').length;
+    document.getElementById('statContacted').textContent = leads.filter(l => l.status === 'Contacted').length;
+    document.getElementById('statConverted').textContent = leads.filter(l => l.status === 'Converted').length;
+  }
+
+  // ── RENDER TABLE ──
+  function renderTable() {
+    const search = document.getElementById('searchBox').value.toLowerCase();
+    const src = document.getElementById('filterSource').value;
+    const sts = document.getElementById('filterStatus').value;
+
+    let filtered = leads.filter((l, i) => {
+      const matchSearch = l.name.toLowerCase().includes(search) || l.email.toLowerCase().includes(search);
+      const matchSrc = src ? l.source === src : true;
+      const matchSts = sts ? l.status === sts : true;
+
+      let matchNav = true;
+      if (currentFilter === 'New Leads') matchNav = l.status === 'New';
+      else if (currentFilter === 'Contacted') matchNav = l.status === 'Contacted';
+      else if (currentFilter === 'Converted') matchNav = l.status === 'Converted';
+
+      return matchSearch && matchSrc && matchSts && matchNav;
+    });
+
+    const tbody = document.getElementById('leadsTable');
+    const empty = document.getElementById('emptyState');
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      empty.classList.remove('hidden');
+      updateStats();
+      return;
+    }
+    empty.classList.add('hidden');
+
+    tbody.innerHTML = filtered.map((l) => {
+      const realIndex = leads.indexOf(l);
+      const badgeClass = l.status === 'New' ? 'badge-new' : l.status === 'Contacted' ? 'badge-contacted' : 'badge-converted';
+      return `<tr>
+        <td>${realIndex + 1}</td>
+        <td><strong>${l.name}</strong></td>
+        <td>${l.email}</td>
+        <td>${l.source}</td>
+        <td><span class="badge ${badgeClass}">${l.status}</span></td>
+        <td>${l.date}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-sm btn-primary" onclick="openEditModal(${realIndex})">Edit</button>
+            <button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;" onclick="openNotesModal(${realIndex})">Notes (${(l.notes||[]).length})</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteLead(${realIndex})">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    updateStats();
+  }
+
+  // ── MODALS ──
+  function openAddModal() {
+    editIndex = null;
+    document.getElementById('modalTitle').textContent = 'Add New Lead';
+    document.getElementById('fName').value = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fSource').value = 'Website';
+    document.getElementById('fStatus').value = 'New';
+    document.getElementById('leadModal').classList.add('open');
+  }
+
+  function openEditModal(i) {
+    editIndex = i;
+    const l = leads[i];
+    document.getElementById('modalTitle').textContent = 'Edit Lead';
+    document.getElementById('fName').value = l.name;
+    document.getElementById('fEmail').value = l.email;
+    document.getElementById('fSource').value = l.source;
+    document.getElementById('fStatus').value = l.status;
+    document.getElementById('leadModal').classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function saveLead() {
+    const name = document.getElementById('fName').value.trim();
+    const email = document.getElementById('fEmail').value.trim();
+    if (!name || !email) { alert('Name and Email are required.'); return; }
+
+    const data = {
+      name,
+      email,
+      source: document.getElementById('fSource').value,
+      status: document.getElementById('fStatus').value,
+      date: new Date().toLocaleDateString('en-IN'),
+      notes: editIndex !== null ? leads[editIndex].notes || [] : []
+    };
+
+    if (editIndex !== null) {
+      leads[editIndex] = data;
+    } else {
+      leads.unshift(data);
+    }
+
+    save();
+    closeModal('leadModal');
+    renderTable();
+  }
+
+  function deleteLead(i) {
+    if (!confirm(`Delete "${leads[i].name}"?`)) return;
+    leads.splice(i, 1);
+    save();
+    renderTable();
+  }
+
+  // ── NOTES ──
+  function openNotesModal(i) {
+    notesIndex = i;
+    document.getElementById('notesTitle').textContent = `Notes — ${leads[i].name}`;
+    document.getElementById('noteText').value = '';
+    renderNotes();
+    document.getElementById('notesModal').classList.add('open');
+  }
+
+  function renderNotes() {
+    const notes = leads[notesIndex].notes || [];
+    const el = document.getElementById('notesList');
+    if (notes.length === 0) {
+      el.innerHTML = '<p style="color:#bbb;font-size:0.85rem;">No notes yet.</p>';
+      return;
+    }
+    el.innerHTML = notes.map(n => `
+      <div class="note-item">
+        <div class="note-date">${n.date}</div>
+        ${n.text}
+      </div>
+    `).join('');
+  }
+
+  function saveNote() {
+    const text = document.getElementById('noteText').value.trim();
+    if (!text) return;
+    if (!leads[notesIndex].notes) leads[notesIndex].notes = [];
+    leads[notesIndex].notes.unshift({
+      text,
+      date: new Date().toLocaleString('en-IN')
+    });
+    save();
+    document.getElementById('noteText').value = '';
+    renderNotes();
+    renderTable();
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // ── SEED DATA ──
+  if (leads.length === 0) {
+    leads = [
+      { name: 'Priya Sharma', email: 'priya@gmail.com', source: 'Website', status: 'New', date: '22/06/2026', notes: [] },
+      { name: 'Arjun Mehta', email: 'arjun.m@outlook.com', source: 'Referral', status: 'Contacted', date: '21/06/2026', notes: [{text: 'Called, scheduled follow-up', date: '21/06/2026, 3:00 PM'}] },
+      { name: 'Sneha Reddy', email: 'sneha.r@company.com', source: 'Social Media', status: 'Converted', date: '20/06/2026', notes: [] },
+      { name: 'Vikram Nair', email: 'vikram@business.in', source: 'Email Campaign', status: 'New', date: '19/06/2026', notes: [] },
+    ];
+    save();
+  }
+</script>
+</body>
+</html>
